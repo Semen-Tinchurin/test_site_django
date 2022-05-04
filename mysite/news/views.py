@@ -3,9 +3,10 @@ from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 from .models import News, Category
-from .forms import NewsForm
+from .forms import NewsForm, UserRegisterForm
 
 
 # def test(request):
@@ -17,6 +18,25 @@ from .forms import NewsForm
 
 
 # CBV - class based view
+
+def register(request):
+    if request.method == "POST":
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Registration success')
+            return redirect('login')
+        else:
+            messages.error(request, 'Form not valid')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'news/register.html', {'form': form})
+
+
+def login(request):
+    return render(request, 'news/login.html')
+
+
 class HomeNews(ListView):
     model = News
     template_name = 'news/home_news_list.html'
