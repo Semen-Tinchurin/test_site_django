@@ -3,8 +3,9 @@ from .views import *
 
 urlpatterns = [
     path('register/', register, name='register'),
-    path('login/', login, name='login'),
-    # path('test/', test, name='test'),
+    path('login/', user_login, name='login'),
+    path('logout/', user_logout, name='logout'),
+    path('contacts/', contacts, name='contacts'),
     # path('', index, name='home'),
     path('', HomeNews.as_view(), name='home'),
     # path('category/<int:category_id>/', get_category, name='category'),

@@ -2,19 +2,34 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import login, logout
 from django.core.paginator import Paginator
 from django.contrib import messages
+from django.core.mail import send_mail
 
 from .models import News, Category
-from .forms import NewsForm, UserRegisterForm
+from .forms import NewsForm, UserRegisterForm, UserLoginForm, ContactForm
 
 
-# def test(request):
-#     objects = ['john', 'paul', 'george', 'ringo', 'john2', 'paul3', 'george4']
-#     paginator = Paginator(objects, 2)
-#     page_num = request.GET.get('page', 1)
-#     page_objects = paginator.get_page(page_num)
-#     return render(request, 'news/test.html', {'page_obj': page_objects})
+def contacts(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            mail = send_mail(form.cleaned_data['subject'],
+                             form.cleaned_data['content'],
+                             'fromwhom@gmail.com',
+                             ['towhom@mail.ru'],
+                             fail_silently=True)
+            if mail:
+                messages.success(request, 'Message sent')
+                return redirect('contacts')
+            else:
+                messages.error(request, 'Message sending error')
+        else:
+            messages.error(request, 'Form not valid')
+    else:
+        form = ContactForm()
+    return render(request, 'news/contacts.html', {'form': form})
 
 
 # CBV - class based view
@@ -23,9 +38,10 @@ def register(request):
     if request.method == "POST":
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            login(request, user)
             messages.success(request, 'Registration success')
-            return redirect('login')
+            return redirect('home')
         else:
             messages.error(request, 'Form not valid')
     else:
@@ -33,8 +49,21 @@ def register(request):
     return render(request, 'news/register.html', {'form': form})
 
 
-def login(request):
-    return render(request, 'news/login.html')
+def user_login(request):
+    if request.method == "POST":
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserLoginForm()
+    return render(request, 'news/login.html', {'form': form})
+
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
 
 
 class HomeNews(ListView):
