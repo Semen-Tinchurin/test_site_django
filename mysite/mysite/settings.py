@@ -138,3 +138,10 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = 'fromwhom@gmail.com'
 EMAIL_HOST_PASSWORD = 'fromwhompassword'
 EMAIL_USE_SSL = True
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'django_cache'),
+    }
+}
